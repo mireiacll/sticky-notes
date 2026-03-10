@@ -1,0 +1,57 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: Arial, sans-serif;
+    background:#f3f4f6;   /* light grey */
+    min-height:100vh;
+}
+
+.header{
+    padding:25px 40px;
+    font-size:20px;
+    font-weight: bold;
+    color:#333;
+}
+
+h1{
+    font-size:32px;
+}
+
+/* floating panel */
+.controls{
+    position:fixed;
+    top:20px;
+    right:20px;
+
+    background:white;
+    padding:10px 15px;
+
+    border-radius:10px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* button */
+#addNoteBtn{
+    border:none;
+    background:#4f46e5;
+    color:white;
+    padding:8px 14px;
+    border-radius:6px;
+    cursor:pointer;
+    font-size:14px;
+}
+
+#addNoteBtn:hover{
+    background:#4338ca;
+}
+
+#board{
+    padding:40px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+}
