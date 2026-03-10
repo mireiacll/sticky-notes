@@ -1,5 +1,9 @@
 const addBtn = document.getElementById("addNoteBtn");
+const board = document.getElementById("board");
 
 addBtn.addEventListener("click", () => {
-    console.log("Add note clicked!");
+    const note = document.createElement("div");
+    note.classList.add("note");
+    note.innerHTML = '<textarea placeholder="Write something..."></textarea>';
+    board.appendChild(note);
 });
