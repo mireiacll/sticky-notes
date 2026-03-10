@@ -50,10 +50,8 @@ h1{
 }
 
 #board{
-    padding:40px;
-    display:flex;
-    flex-wrap:wrap;
-    gap:20px;
+    position:relative;
+    width:100%;
 }
 
 .note{
@@ -68,7 +66,8 @@ h1{
 
     box-shadow:0 4px 10px rgba(0,0,0,0.15);
 
-    position: relative; /* for delete button positioning */
+    position:absolute;
+    cursor:grab;
 }
 
 .note textarea{
