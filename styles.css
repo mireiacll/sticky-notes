@@ -52,6 +52,8 @@ h1{
 #board{
     position:relative;
     width:100%;
+    height:calc(100vh - 80px); /* full height minus header */
+    padding:20px;
 }
 
 .note{

@@ -26,8 +26,19 @@ function makeDraggable(note) {
         offsetX = e.clientX - note.offsetLeft;
         offsetY = e.clientY - note.offsetTop;
         function moveNote(e) {
-            note.style.left = (e.clientX - offsetX) + "px";
-            note.style.top = (e.clientY - offsetY) + "px";
+            let x = e.clientX - offsetX;
+            let y = e.clientY - offsetY;
+
+            const maxX = board.offsetWidth - note.offsetWidth;
+            const maxY = board.offsetHeight - note.offsetHeight;
+
+            if (x >= 0 && x <= maxX) {
+                note.style.left = x + "px";
+            }
+
+            if (y >= 0 && y <= maxY) {
+                note.style.top = y + "px";
+            }
         }
         document.addEventListener("mousemove", moveNote);
         document.addEventListener("mouseup", () => {
