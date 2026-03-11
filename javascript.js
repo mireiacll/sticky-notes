@@ -4,9 +4,16 @@ const board = document.getElementById("board");
 let typingTimer;
 const typingDelay = 1000; // milliseconds
 
-function delayedSave() { // Function to delay saving notes while typing
+function delayedSave(statusElement) { // Function to delay saving notes while typing
     clearTimeout(typingTimer);
-    typingTimer = setTimeout(saveNotes, typingDelay); // Save notes after a delay of 1 second
+
+    statusElement.textContent = "Saving..."; // Show saving status while typing
+    statusElement.className = "noteStatus saving";
+    typingTimer = setTimeout(() => {
+        saveNotes();
+        statusElement.textContent = "Saved"; // Update status to saved after saving
+        statusElement.className = "noteStatus saved";
+    }, typingDelay); // Save notes after a delay of 1 second
 }
 
 // Function to create a new note with specified position, title, and content
@@ -14,6 +21,11 @@ function createNote(x = 50, y = 50, title = "", content = "") {
 
     const note = document.createElement("div");
     note.classList.add("note");
+
+    const status = document.createElement("span");
+    status.classList.add("noteStatus");
+    status.textContent = "Saved";
+    note.appendChild(status);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.classList.add("deleteBtn");
@@ -44,8 +56,8 @@ function createNote(x = 50, y = 50, title = "", content = "") {
     titleArea.value = title;
     contentArea.value = content;
 
-    titleArea.addEventListener("input", delayedSave); // Save notes after typing in the title area
-    contentArea.addEventListener("input", delayedSave); // Save notes after typing in the content area
+    titleArea.addEventListener("input", () => delayedSave(status)); // Save notes after typing in the title area
+    contentArea.addEventListener("input", () => delayedSave(status)); // Save notes after typing in the content area
 
     makeDraggable(note); // Make the note draggable
 
@@ -111,5 +123,30 @@ function loadNotes() {
         createNote(noteData.left, noteData.top, noteData.title, noteData.content); // Create notes based on saved data
     });
 }
+
+const organizeBtn = document.getElementById("organizeBtn");
+organizeBtn.addEventListener("click", () => {
+    const notes = document.querySelectorAll(".note");
+
+    if (notes.length === 0) return; // If there are no notes, exit the function
+
+    const firstNote = notes[0];
+    const noteWidth = firstNote.offsetWidth;
+    const noteHeight = firstNote.offsetHeight;
+    const gap = 20; // Gap between notes
+    const boardWidth = board.offsetWidth;
+    let x0 = 50; // Starting x position for the first note
+    let y0 = 50; // Starting y position for the first note
+    const notesPerRow = Math.max(1, Math.floor((boardWidth - x0) / (noteWidth + gap))); // Calculate how many notes can fit in a row
+    notes.forEach((note,index) => {
+        const row = Math.floor(index / notesPerRow);
+        const col = index % notesPerRow;
+        const x = x0 + col * (noteWidth + gap); // Calculate the new x position
+        const y = y0 + row * (noteHeight + gap); // Calculate the new y position
+        note.style.left = x + "px"; // Set the new x position
+        note.style.top = y + "px"; // Set the new y position    
+    });
+    saveNotes(); // Save notes after organizing
+});
 
 loadNotes();

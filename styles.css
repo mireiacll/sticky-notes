@@ -35,7 +35,7 @@ h1{
 }
 
 /* button */
-#addNoteBtn{
+#addNoteBtn, #organizeBtn{
     border:none;
     background:#4f46e5;
     color:white;
@@ -45,7 +45,7 @@ h1{
     font-size:14px;
 }
 
-#addNoteBtn:hover{
+#addNoteBtn:hover, #organizeBtn:hover{
     background:#4338ca;
 }
 
@@ -90,6 +90,7 @@ h1{
     font-size:16px;
     font-weight:bold;
 
+    margin-top: 14px;
     margin-bottom:6px;
     border-bottom:1px solid rgba(0,0,0,0.2);
 }
@@ -123,3 +124,21 @@ h1{
 
     color:#444;
 }
+
+.noteStatus{
+    position:absolute;
+    top:8px;
+    left:15px;
+
+    font-size:11px;
+    color:#666;
+}
+
+.noteStatus.saved{
+    color:rgb(11, 96, 11);
+}
+
+.noteStatus.saving{
+    color:#666
+}
+
