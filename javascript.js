@@ -48,6 +48,7 @@ addBtn.addEventListener("click", () => {
 function makeDraggable(note) {
     let offsetX, offsetY;  
     note.addEventListener("mousedown", (e) => {
+        if (e.target.tagName === "TEXTAREA" || e.target.classList.contains("deleteBtn")) return; // Prevent dragging when clicking on textarea or delete button
         offsetX = e.clientX - note.offsetLeft;
         offsetY = e.clientY - note.offsetTop;
         function moveNote(e) {
