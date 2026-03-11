@@ -1,25 +1,48 @@
 const addBtn = document.getElementById("addNoteBtn");
 const board = document.getElementById("board");
 
-addBtn.addEventListener("click", () => {
-    // Create a new note element
+// Function to create a new note with specified position, title, and content
+function createNote(x = 50, y = 50, title = "", content = "") {
 
     const note = document.createElement("div");
     note.classList.add("note");
-    note.innerHTML = '<button class="deleteBtn">X</button><textarea placeholder="Write something..."></textarea>'; 
-    note.style.left ="50px";
-    note.style.top ="50px";
-    board.appendChild(note);
 
-    // Add event listener to the delete button of the new note
+    // Set the inner HTML of the note with a delete button, title textarea, and content textarea
+    note.innerHTML = `
+        <button class="deleteBtn">X</button>
+        <textarea class="noteTitle" placeholder="Title..."></textarea>
+        <textarea class="noteContent" placeholder="Write something..."></textarea>
+    `; 
+
+    // Set the position of the note
+    note.style.left = x + "px";
+    note.style.top = y + "px";
+
+    board.appendChild(note); // Add the note to the board
+
     const deleteBtn = note.querySelector(".deleteBtn");
-    deleteBtn.addEventListener("click", () => {
+    deleteBtn.addEventListener("click", () => { // Add event listener to the delete button
         note.remove();
-        saveNotes(); // Save notes after deletion
+        saveNotes();
     });
 
+    const titleArea = note.querySelector(".noteTitle"); 
+    const contentArea = note.querySelector(".noteContent");
+
+    titleArea.value = title;
+    contentArea.value = content;
+
+    titleArea.addEventListener("input", saveNotes);
+    contentArea.addEventListener("input", saveNotes);
+
+    makeDraggable(note); // Make the note draggable
+
+    return note;
+}
+
+addBtn.addEventListener("click", () => {
+    createNote(); // Create a new note at the default position with empty title and content
     saveNotes(); // Save notes after adding a new note
-    makeDraggable(note);
 });
 
 function makeDraggable(note) {
@@ -54,13 +77,15 @@ function saveNotes() {
     const notes = document.querySelectorAll(".note"); // Select all notes
     const notesData = [];
     notes.forEach(note => {
-        const text = note.querySelector("textarea").value;
+        const title = note.querySelector(".noteTitle").value;
+        const text = note.querySelector(".noteContent").value;
         const x =   note.offsetLeft;
         const y =   note.offsetTop;
         notesData.push({ // Store note data in an array
             left: x,
             top: y,
-            content: text
+            content: text,
+            title: title
         });
     });
     localStorage.setItem("stickyNotes", JSON.stringify(notesData)); // Save notes data to localStorage
@@ -70,21 +95,7 @@ function loadNotes() {
     const savedNotes = JSON.parse(localStorage.getItem("stickyNotes"));
     if (!savedNotes) return; // If there are no saved notes, exit the function
     savedNotes.forEach(noteData => {
-        const note = document.createElement("div");
-        note.classList.add("note");
-        note.innerHTML = '<button class="deleteBtn">X</button><textarea placeholder="Write something..."></textarea>';
-        note.style.left = noteData.left + "px";
-        note.style.top = noteData.top + "px";
-        board.appendChild(note);
-        const deleteBtn = note.querySelector(".deleteBtn");
-        deleteBtn.addEventListener("click", () => {
-            note.remove();
-            saveNotes(); // Save notes after deletion
-        });
-        const textArea = note.querySelector("textarea");
-        textArea.value = noteData.content; // Set the content of the textarea to the saved content
-        textArea.addEventListener("input", saveNotes); // Save notes whenever the content changes
-        makeDraggable(note); // Make the note draggable
+        createNote(noteData.left, noteData.top, noteData.title, noteData.content); // Create notes based on saved data
     });
 }
 

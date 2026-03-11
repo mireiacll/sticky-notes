@@ -70,12 +70,32 @@ h1{
 
     position:absolute;
     cursor:grab;
+
+    display: flex;
+    flex-direction: column;
 }
 
-.note textarea{
+.noteTitle{
     width:100%;
-    height:100%;
+    height:28px;
 
+    border:none;
+    outline:none;
+
+    background:transparent;
+
+    resize:none;
+
+    font-family:inherit;
+    font-size:16px;
+    font-weight:bold;
+
+    margin-bottom:6px;
+    border-bottom:1px solid rgba(0,0,0,0.2);
+}
+
+.noteContent{
+    flex:1;
     border:none;
     outline:none;
 
