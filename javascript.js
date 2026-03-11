@@ -1,18 +1,34 @@
 const addBtn = document.getElementById("addNoteBtn");
 const board = document.getElementById("board");
 
+let typingTimer;
+const typingDelay = 1000; // milliseconds
+
+function delayedSave() { // Function to delay saving notes while typing
+    clearTimeout(typingTimer);
+    typingTimer = setTimeout(saveNotes, typingDelay); // Save notes after a delay of 1 second
+}
+
 // Function to create a new note with specified position, title, and content
 function createNote(x = 50, y = 50, title = "", content = "") {
 
     const note = document.createElement("div");
     note.classList.add("note");
 
-    // Set the inner HTML of the note with a delete button, title textarea, and content textarea
-    note.innerHTML = `
-        <button class="deleteBtn">X</button>
-        <textarea class="noteTitle" placeholder="Title..."></textarea>
-        <textarea class="noteContent" placeholder="Write something..."></textarea>
-    `; 
+    const deleteBtn = document.createElement("button");
+    deleteBtn.classList.add("deleteBtn");
+    deleteBtn.textContent = "X";
+    note.appendChild(deleteBtn);
+
+    const titleArea = document.createElement("textarea");
+    titleArea.classList.add("noteTitle");
+    titleArea.placeholder = "Title...";
+    note.appendChild(titleArea);
+
+    const contentArea = document.createElement("textarea");
+    contentArea.classList.add("noteContent");
+    contentArea.placeholder = "Write something...";
+    note.appendChild(contentArea);
 
     // Set the position of the note
     note.style.left = x + "px";
@@ -20,20 +36,16 @@ function createNote(x = 50, y = 50, title = "", content = "") {
 
     board.appendChild(note); // Add the note to the board
 
-    const deleteBtn = note.querySelector(".deleteBtn");
     deleteBtn.addEventListener("click", () => { // Add event listener to the delete button
         note.remove();
         saveNotes();
     });
 
-    const titleArea = note.querySelector(".noteTitle"); 
-    const contentArea = note.querySelector(".noteContent");
-
     titleArea.value = title;
     contentArea.value = content;
 
-    titleArea.addEventListener("input", saveNotes);
-    contentArea.addEventListener("input", saveNotes);
+    titleArea.addEventListener("input", delayedSave); // Save notes after typing in the title area
+    contentArea.addEventListener("input", delayedSave); // Save notes after typing in the content area
 
     makeDraggable(note); // Make the note draggable
 
