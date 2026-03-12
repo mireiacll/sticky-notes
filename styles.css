@@ -142,3 +142,43 @@ h1{
     color:#666
 }
 
+.colorMenu{
+    position:absolute;
+    background: white;
+    padding:10px;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.15);
+
+    display:flex;
+    flex-wrap: wrap;
+    gap:8px;
+    width: 145px;
+}
+
+.colorOption{
+    width:22px;
+    height:22px;
+    border-radius:50%;
+    cursor:pointer;
+    border: 1px solid #ddd;
+}
+
+.closeColorMenu{
+    position:absolute;
+    top:6px;
+    right:6px;
+    border: none;
+    background: transparent;
+
+    font-size:14px;
+    font-weight:bold;
+
+    cursor:pointer;
+
+    color:#444;
+}
+
+.note.editing {
+    outline: 3px solid #4f46e5;
+    outline-offset: 2px;
+}

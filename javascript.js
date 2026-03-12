@@ -17,10 +17,11 @@ function delayedSave(statusElement) { // Function to delay saving notes while ty
 }
 
 // Function to create a new note with specified position, title, and content
-function createNote(x = 50, y = 50, title = "", content = "") {
+function createNote(x = 50, y = 50, title = "", content = "", color = "#fff475") {
 
     const note = document.createElement("div");
     note.classList.add("note");
+    note.style.backgroundColor = color;
 
     const status = document.createElement("span");
     status.classList.add("noteStatus");
@@ -58,8 +59,13 @@ function createNote(x = 50, y = 50, title = "", content = "") {
 
     titleArea.addEventListener("input", () => delayedSave(status)); // Save notes after typing in the title area
     contentArea.addEventListener("input", () => delayedSave(status)); // Save notes after typing in the content area
+    
 
     makeDraggable(note); // Make the note draggable
+
+    note.addEventListener("dblclick", (e) => {
+        openColorMenu(note, e.clientX, e.clientY); // Open color menu on double-click
+    });
 
     return note;
 }
@@ -106,11 +112,13 @@ function saveNotes() {
         const text = note.querySelector(".noteContent").value;
         const x =   note.offsetLeft;
         const y =   note.offsetTop;
+        const color = note.style.backgroundColor || "#fff475"; // Get the background color of the note, default to yellow if not set
         notesData.push({ // Store note data in an array
             left: x,
             top: y,
             content: text,
-            title: title
+            title: title,
+            color: color
         });
     });
     localStorage.setItem("stickyNotes", JSON.stringify(notesData)); // Save notes data to localStorage
@@ -120,7 +128,7 @@ function loadNotes() {
     const savedNotes = JSON.parse(localStorage.getItem("stickyNotes"));
     if (!savedNotes) return; // If there are no saved notes, exit the function
     savedNotes.forEach(noteData => {
-        createNote(noteData.left, noteData.top, noteData.title, noteData.content); // Create notes based on saved data
+        createNote(noteData.left, noteData.top, noteData.title, noteData.content, noteData.color); // Create notes based on saved data
     });
 }
 
@@ -148,5 +156,56 @@ organizeBtn.addEventListener("click", () => {
     });
     saveNotes(); // Save notes after organizing
 });
+
+function openColorMenu(note, x, y) {
+    const existingMenu = document.querySelector(".colorMenu");
+    if (existingMenu) {
+        existingMenu.remove(); // Remove existing color menu if it exists
+    }   
+
+    const menu = document.createElement("div");
+    menu.classList.add("colorMenu");
+
+    // close menu button
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "X";
+    closeBtn.classList.add("closeColorMenu");
+    closeBtn.addEventListener("click", () => {
+        note.classList.remove("editing"); // Remove editing class from the note when closing the color menu
+        menu.remove(); // Close the color menu when the close button is clicked
+    });
+    menu.appendChild(closeBtn);
+
+    menu.style.left = x + "px";
+    menu.style.top = y + "px";
+
+    const colors = [
+        "#fff475",
+        "#f8a199",
+        "#ffd145",
+        "#ccff90",
+        "#a7ffeb",
+        "#aecbfa",
+        "#d7aefb",
+        "#fdcfe8"
+    ];
+    colors.forEach(color => {
+        const btn = document.createElement("div");
+        btn.classList.add("colorOption");
+        btn.style.backgroundColor = color;
+        btn.addEventListener("click", () => {
+            note.style.backgroundColor = color;
+            const status = note.querySelector(".noteStatus");
+            delayedSave(status); // Save notes after changing the color
+        });
+        menu.appendChild(btn);
+    });
+    document.body.appendChild(menu);
+
+    document.querySelectorAll(".note").forEach(n => {
+        n.classList.remove("editing"); // Remove editing class from all notes
+    });
+    note.classList.add("editing"); // Add editing class to the current note
+}
 
 loadNotes();
