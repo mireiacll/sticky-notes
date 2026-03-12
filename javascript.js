@@ -33,15 +33,36 @@ function createNote(x = 50, y = 50, title = "", content = "", color = "#fff475")
     deleteBtn.textContent = "X";
     note.appendChild(deleteBtn);
 
+    const titleContainer = document.createElement("div");
+    titleContainer.classList.add("highlightContainer");
+    const titleHighlight = document.createElement("div");
+    titleHighlight.classList.add("highlightLayer");
+    titleContainer.appendChild(titleHighlight);
+    note.appendChild(titleContainer);
+
     const titleArea = document.createElement("textarea");
     titleArea.classList.add("noteTitle");
     titleArea.placeholder = "Title...";
-    note.appendChild(titleArea);
+    titleContainer.appendChild(titleArea);
+    titleArea.addEventListener("scroll", () => {
+        titleHighlight.scrollTop = titleArea.scrollTop; // Sync scroll position of the title highlight with the title textarea
+    });
+
+    const contentContainer = document.createElement("div");
+    contentContainer.classList.add("highlightContainer");
+    const contentHighlight = document.createElement("div");
+    contentHighlight.classList.add("highlightLayer");
+    contentContainer.appendChild(contentHighlight);
+    note.appendChild(contentContainer);
 
     const contentArea = document.createElement("textarea");
     contentArea.classList.add("noteContent");
     contentArea.placeholder = "Write something...";
-    note.appendChild(contentArea);
+    contentContainer.appendChild(contentArea);
+
+    contentArea.addEventListener("scroll", () => {
+        contentHighlight.scrollTop = contentArea.scrollTop; // Sync scroll position of the content highlight with the content textarea
+    });
 
     // Set the position of the note
     note.style.left = x + "px";
@@ -206,6 +227,50 @@ function openColorMenu(note, x, y) {
         n.classList.remove("editing"); // Remove editing class from all notes
     });
     note.classList.add("editing"); // Add editing class to the current note
+}
+
+const searchInput = document.getElementById("SearchInput");
+searchInput.addEventListener("input", searchnotes);
+
+function searchnotes() {
+    const query = searchInput.value.toLowerCase();
+    const notes = document.querySelectorAll(".note");
+    notes.forEach(note => {
+        const titleArea = note.querySelector(".noteTitle");
+        const contentArea = note.querySelector(".noteContent");
+        
+        updateHighlight(titleArea, query);
+        updateHighlight(contentArea, query);
+    });
+}
+
+function updateHighlight(textarea, query) {
+    const container = textarea.parentElement; // Get the parent container of the textarea
+    const highlight = container.querySelector(".highlightLayer"); // Get the highlight layer within the container
+    highlight.innerHTML = ""; // Clear previous highlights
+
+    if (query === "") return; // If the search query is empty, exit the 
+    
+    const text = textarea.value
+    const textLower = text.toLowerCase();
+    let index = 0;
+
+    while (true) {
+        const match = textLower.indexOf(query, index);
+        if (match === -1) {
+            highlight.append(document.createTextNode(text.substring(index))); // Append remaining text without highlights
+            break; // If no more matches are found, exit the loop
+        }
+        highlight.append(
+            document.createTextNode(text.substring(index, match)) // Append text before the match without highlights
+        );
+
+        const span = document.createElement("span"); // Create a span element to highlight the matched text
+        span.textContent = text.slice(match, match + query.length); // Set the text content of the span to the matched text
+        highlight.append(span); // Append the highlighted span to the highlight layer
+
+        index = match + query.length;
+    }
 }
 
 loadNotes();
