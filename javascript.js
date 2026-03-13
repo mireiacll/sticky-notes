@@ -33,35 +33,42 @@ function createNote(x = 50, y = 50, title = "", content = "", color = "#fff475")
     deleteBtn.textContent = "X";
     note.appendChild(deleteBtn);
 
+    // Title container
     const titleContainer = document.createElement("div");
     titleContainer.classList.add("highlightContainer");
+
     const titleHighlight = document.createElement("div");
     titleHighlight.classList.add("highlightLayer");
     titleContainer.appendChild(titleHighlight);
-    note.appendChild(titleContainer);
 
     const titleArea = document.createElement("textarea");
     titleArea.classList.add("noteTitle");
     titleArea.placeholder = "Title...";
     titleContainer.appendChild(titleArea);
-    titleArea.addEventListener("scroll", () => {
-        titleHighlight.scrollTop = titleArea.scrollTop; // Sync scroll position of the title highlight with the title textarea
-    });
 
+    note.appendChild(titleContainer);
+
+    titleArea.addEventListener("scroll", () => {
+        titleHighlight.style.transform =`translateY(-${titleArea.scrollTop}px)`; // Sync scroll position of the title highlight with the title textarea
+    });
+    
+    // Content container
     const contentContainer = document.createElement("div");
     contentContainer.classList.add("highlightContainer");
+
     const contentHighlight = document.createElement("div");
     contentHighlight.classList.add("highlightLayer");
     contentContainer.appendChild(contentHighlight);
-    note.appendChild(contentContainer);
 
     const contentArea = document.createElement("textarea");
     contentArea.classList.add("noteContent");
     contentArea.placeholder = "Write something...";
     contentContainer.appendChild(contentArea);
+    
+    note.appendChild(contentContainer);
 
     contentArea.addEventListener("scroll", () => {
-        contentHighlight.scrollTop = contentArea.scrollTop; // Sync scroll position of the content highlight with the content textarea
+        contentHighlight.style.transform = `translateY(-${contentArea.scrollTop}px)`; // Sync scroll position of the content highlight with the content textarea
     });
 
     // Set the position of the note
@@ -78,9 +85,29 @@ function createNote(x = 50, y = 50, title = "", content = "", color = "#fff475")
     titleArea.value = title;
     contentArea.value = content;
 
-    titleArea.addEventListener("input", () => delayedSave(status)); // Save notes after typing in the title area
-    contentArea.addEventListener("input", () => delayedSave(status)); // Save notes after typing in the content area
-    
+    titleArea.addEventListener("input", () => {
+        delayedSave(status); // Save notes after typing in the title area
+        updateHighlight(titleArea, searchInput.value.toLowerCase()); // Update highlights in the title area while typing
+        adjustScrollbarPadding(titleArea); // Adjust padding for scrollbar in the title area
+    });
+    contentArea.addEventListener("input", () => {
+        delayedSave(status); // Save notes after typing in the content area
+        updateHighlight(contentArea, searchInput.value.toLowerCase()); // Update highlights in the content area while typing
+        adjustScrollbarPadding(contentArea); // Adjust padding for scrollbar in the content area
+    });
+
+    // Apply scrollbar padding after the note is in the DOM
+    // Use setTimeout so the browser has laid out the elements before we measure
+    setTimeout(() => {
+        adjustScrollbarPadding(titleArea);
+        adjustScrollbarPadding(contentArea);
+        // Re-run highlights in case the note was loaded with a query active
+        const query = searchInput.value.toLowerCase();
+        if (query) {
+            updateHighlight(titleArea, query);
+            updateHighlight(contentArea, query);
+        }
+    }, 0);
 
     makeDraggable(note); // Make the note draggable
 
@@ -271,6 +298,16 @@ function updateHighlight(textarea, query) {
 
         index = match + query.length;
     }
+}
+
+function adjustScrollbarPadding(textarea) { // Function to adjust padding when scrollbar appears or disappears
+    const container = textarea.parentElement;
+    const highlight = container.querySelector(".highlightLayer");
+ 
+    const hasScrollbar = textarea.scrollHeight > textarea.clientHeight;
+    const pad = hasScrollbar ? "15px" : "0px";
+ 
+    highlight.style.paddingRight = pad;
 }
 
 loadNotes();

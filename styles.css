@@ -26,10 +26,8 @@ h1{
     position:fixed;
     top:20px;
     right:20px;
-
     background:white;
     padding:10px 15px;
-
     border-radius:10px;
     box-shadow:0 4px 12px rgba(0,0,0,0.1);
 }
@@ -59,15 +57,12 @@ h1{
 .note{
     width:200px;
     height:200px;
-
     background:#fff475;   /* sticky note yellow */
     padding:15px;
     border-radius:6px;
     box-shadow:0 4px 10px rgba(0,0,0,0.15);
-
     position:absolute;
     cursor:grab;
-
     display: flex;
     flex-direction: column;
 }
@@ -75,50 +70,37 @@ h1{
 .noteTitle{
     width:100%;
     height:28px;
-
     border:none;
     outline:none;
-
     background:transparent;
-
     resize:none;
-
     font-family:inherit;
     font-size:16px;
     font-weight:bold;
-
-    margin-top: 14px;
-    margin-bottom:6px;
     border-bottom:1px solid rgba(0,0,0,0.2);
 }
 
 .noteContent{
-    flex:1;
+    height: 100%;
+    width:100%;
     border:none;
     outline:none;
-
     background:transparent;
-
     resize:none; 
-
     font-family:inherit;
     font-size:14px;
+    padding: 0;
 }
 
 .deleteBtn{
-
     position:absolute;
     top:6px;
     right:8px;
-
     border: none;
     background: transparent;
-
     font-size:16px;
     font-weight:bold;
-
     cursor:pointer;
-
     color:#444;
 }
 
@@ -126,7 +108,6 @@ h1{
     position:absolute;
     top:8px;
     left:15px;
-
     font-size:11px;
     color:#666;
 }
@@ -145,7 +126,6 @@ h1{
     padding:10px;
     border-radius:8px;
     box-shadow:0 4px 12px rgba(0,0,0,0.15);
-
     display:flex;
     flex-wrap: wrap;
     gap:8px;
@@ -166,12 +146,9 @@ h1{
     right:6px;
     border: none;
     background: transparent;
-
     font-size:14px;
     font-weight:bold;
-
     cursor:pointer;
-
     color:#444;
 }
 
@@ -188,52 +165,68 @@ h1{
     width: 200px;
 }
 
+/*Highlight container --------------------------*/
 .highlightContainer {
     position: relative;
-
-    resize: none;
+    overflow: hidden;   
 }
 
+/*Title container*/
+.note > .highlightContainer:first-of-type {
+    margin-top: 14px;
+    margin-bottom: 6px;
+    overflow: hidden;
+    display: flex;
+    /* height is determined by the textarea's margin+height+margin = 48px */
+    flex-shrink: 0;
+}
+
+/*Content container*/
+.note > .highlightContainer:last-of-type {
+    flex: 1;
+    overflow: hidden;
+    font-size: 14px;
+}
+
+
+/*Highlight layer--------------------------------*/
 .highlightLayer {
     position: absolute;
-    top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    padding: 0 ;
-    
     pointer-events: none; /* allow clicks to pass through */
     white-space: pre-wrap; /* preserve whitespace and line breaks */
     overflow-wrap: break-word; /* allow long words to break */
     color: transparent; /* hide the text */
-
     z-index: 0; /* place it behind the textarea */
-
     font-family:Arial, sans-serif;
     font-size:inherit;
     line-height:inherit;
     letter-spacing:inherit;
+    /*overflow: hidden; /* the highlights moving syncronized with the text when scrolling */
 }
 
 .highlightLayer span {
     background-color: rgba(255, 0, 0, 0.3); /* highlight color */
     color: transparent; /* hide the text */
-    box-sizing: border-box;
 }
 
-.note > .highlightContainer:last-of-type {
-    flex:1;
-    display:flex;
-    font-size: 14px;
+.note > .highlightContainer:first-of-type .highlightLayer{
+    height: 28px; /* match the title textarea height */
+    font-size: 16px;
+    line-height: normal;
+    font-weight: bold;
+    min-height: 0;
+    padding: 0;
+}
+
+.note > .highlightContainer:last-of-type .highlightLayer{
+    top: 0;
+    height: 100%;
+    min-height: 100%;
 }
 
 textarea {
     position: relative;
     z-index: 1; /* place it above the highlight layer */
-}
-
-.note > .highlightContainer:first-of-type .highlightLayer{
-    top:14px;
-    font-size: 16px;
-    font-weight: bold;
 }
