@@ -33,6 +33,38 @@ function createNote(x = 50, y = 50, title = "", content = "", color = "#fff475")
     deleteBtn.textContent = "X";
     note.appendChild(deleteBtn);
 
+    // ── Match navigator (no wrapper div — uses span+buttons
+    //    so they don't interfere with div:last-of-type) ────
+    const matchPrev = document.createElement("button");
+    matchPrev.classList.add("matchNavBtn", "matchPrevBtn");
+    matchPrev.textContent = "▲";
+    matchPrev.title = "Previous match";
+    matchPrev.style.display = "none";
+    note.appendChild(matchPrev);
+ 
+    const matchCount = document.createElement("span");
+    matchCount.classList.add("matchNavCount");
+    matchCount.style.display = "none";
+    note.appendChild(matchCount);
+ 
+    const matchNext = document.createElement("button");
+    matchNext.classList.add("matchNavBtn", "matchNextBtn");
+    matchNext.textContent = "▼";
+    matchNext.title = "Next match";
+    matchNext.style.display = "none";
+    note.appendChild(matchNext);
+ 
+    note._matchState = { matches: [], idx: 0 };
+ 
+    matchPrev.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navigateMatch(note, -1);
+    });
+    matchNext.addEventListener("click", (e) => {
+        e.stopPropagation();
+        navigateMatch(note, 1);
+    });
+
     // Title container
     const titleContainer = document.createElement("div");
     titleContainer.classList.add("highlightContainer");
@@ -87,13 +119,17 @@ function createNote(x = 50, y = 50, title = "", content = "", color = "#fff475")
 
     titleArea.addEventListener("input", () => {
         delayedSave(status); // Save notes after typing in the title area
-        updateHighlight(titleArea, searchInput.value.toLowerCase()); // Update highlights in the title area while typing
+        const q = searchInput.value.toLowerCase(); 
+        updateHighlight(titleArea, q); // Update highlights in the title area while typing
         adjustScrollbarPadding(titleArea); // Adjust padding for scrollbar in the title area
+        updateNoteMatches(note, q);
     });
     contentArea.addEventListener("input", () => {
         delayedSave(status); // Save notes after typing in the content area
-        updateHighlight(contentArea, searchInput.value.toLowerCase()); // Update highlights in the content area while typing
+        const q = searchInput.value.toLowerCase();
+        updateHighlight(contentArea, q); // Update highlights in the content area while typing
         adjustScrollbarPadding(contentArea); // Adjust padding for scrollbar in the content area
+        updateNoteMatches(note, q);
     });
 
     // Apply scrollbar padding after the note is in the DOM
@@ -106,6 +142,7 @@ function createNote(x = 50, y = 50, title = "", content = "", color = "#fff475")
         if (query) {
             updateHighlight(titleArea, query);
             updateHighlight(contentArea, query);
+            updateNoteMatches(note, query);
         }
     }, 0);
 
@@ -180,6 +217,8 @@ function loadNotes() {
     });
 }
 
+
+// Organize notes -----------------------------------------------------------------
 const organizeBtn = document.getElementById("organizeBtn");
 organizeBtn.addEventListener("click", () => {
     const notes = document.querySelectorAll(".note");
@@ -205,6 +244,8 @@ organizeBtn.addEventListener("click", () => {
     saveNotes(); // Save notes after organizing
 });
 
+
+// Color menu -----------------------------------------------------------------
 function openColorMenu(note, x, y) {
     const existingMenu = document.querySelector(".colorMenu");
     if (existingMenu) {
@@ -259,6 +300,7 @@ function openColorMenu(note, x, y) {
 const searchInput = document.getElementById("SearchInput");
 searchInput.addEventListener("input", searchnotes);
 
+// Search and highlight ----------------------------------------------------------------
 function searchnotes() {
     const query = searchInput.value.toLowerCase();
     const notes = document.querySelectorAll(".note");
@@ -268,6 +310,7 @@ function searchnotes() {
         
         updateHighlight(titleArea, query);
         updateHighlight(contentArea, query);
+        updateNoteMatches(note,query);
     });
 }
 
@@ -278,28 +321,29 @@ function updateHighlight(textarea, query) {
 
     if (query === "") return; // If the search query is empty, exit the 
     
-    const text = textarea.value
-    const textLower = text.toLowerCase();
+    const rawText = textarea.value
+    const rawTextLower = rawText.toLowerCase();
     let index = 0;
 
     while (true) {
-        const match = textLower.indexOf(query, index);
+        const match = rawTextLower.indexOf(query, index);
         if (match === -1) {
-            highlight.append(document.createTextNode(text.substring(index))); // Append remaining text without highlights
+            highlight.append(document.createTextNode(rawText.substring(index))); // Append remaining text without highlights
             break; // If no more matches are found, exit the loop
         }
         highlight.append(
-            document.createTextNode(text.substring(index, match)) // Append text before the match without highlights
+            document.createTextNode(rawText.substring(index, match)) // Append text before the match without highlights
         );
 
         const span = document.createElement("span"); // Create a span element to highlight the matched text
-        span.textContent = text.slice(match, match + query.length); // Set the text content of the span to the matched text
+        span.textContent = rawText.slice(match, match + query.length); // Set the text content of the span to the matched text
         highlight.append(span); // Append the highlighted span to the highlight layer
 
         index = match + query.length;
     }
 }
 
+// Scrollbar padding adjustment ----------------------------------------------------------------
 function adjustScrollbarPadding(textarea) { // Function to adjust padding when scrollbar appears or disappears
     const container = textarea.parentElement;
     const highlight = container.querySelector(".highlightLayer");
@@ -308,6 +352,101 @@ function adjustScrollbarPadding(textarea) { // Function to adjust padding when s
     const pad = hasScrollbar ? "15px" : "0px";
  
     highlight.style.paddingRight = pad;
+}
+
+// Match navigation ----------------------------------------------------------------
+function getMatchPositions(rawText, query) { // Function to get the positions of all matches of the query in the text
+    const lower = rawText.toLowerCase();
+    const positions = [];
+    let index = 0;
+    while (true) {
+        const match = lower.indexOf(query, index);
+        if (match === -1) break;
+        positions.push(match);
+        index = match + query.length;
+    }
+    return positions;
+}
+
+function scrollToMatch(note, idx) {
+    const { matches } = note._matchState;
+    if (!matches.length) return;
+    const { textarea, charIndex } = matches[idx];
+ 
+    // Use mirror to find pixel position of match
+    const cs = window.getComputedStyle(textarea);
+    const mirror = document.createElement("div");
+    ["font-family","font-size","font-weight","line-height","letter-spacing",
+     "word-spacing","padding-top","padding-right","padding-bottom","padding-left"
+    ].forEach(p => { mirror.style[p] = cs[p]; });
+    mirror.style.position    = "absolute";
+    mirror.style.visibility  = "hidden";
+    mirror.style.top         = "-9999px";
+    mirror.style.left        = "-9999px";
+    mirror.style.width       = textarea.clientWidth + "px";
+    mirror.style.height      = "auto";
+    mirror.style.whiteSpace  = "pre-wrap";
+    mirror.style.wordWrap    = "break-word";
+    mirror.style.boxSizing   = "border-box";
+    mirror.style.overflowWrap = "break-word";
+    mirror.textContent = textarea.value.substring(0, charIndex);
+    document.body.appendChild(mirror);
+    const matchTop = mirror.scrollHeight;
+    document.body.removeChild(mirror);
+ 
+    const maxScroll = textarea.scrollHeight - textarea.clientHeight;
+    const scrollTop = Math.min(Math.max(0, matchTop - textarea.clientHeight / 2), maxScroll);
+ 
+    textarea.scrollTop = scrollTop;
+    // Dispatch scroll event so the existing listener syncs the highlight
+    // using the real clamped textarea.scrollTop — no manual transform needed
+    textarea.dispatchEvent(new Event("scroll"));
+}
+
+function updateNoteMatches(note, query) {
+    if (!note || typeof note.querySelector !== "function") return; 
+    if (!note._matchState) note._matchState = { matches: [], idx: 0 };
+ 
+    const titleArea   = note.querySelector(".noteTitle");
+    const contentArea = note.querySelector(".noteContent");
+    const matchPrev   = note.querySelector(".matchPrevBtn");
+    const matchNext   = note.querySelector(".matchNextBtn");
+    const matchCount  = note.querySelector(".matchNavCount");
+ 
+    if (!matchPrev || !matchNext || !matchCount) return; 
+ 
+    const matches = [];
+    if (query) {
+        getMatchPositions(titleArea.value,   query).forEach(pos => matches.push({ textarea: titleArea,   charIndex: pos }));
+        getMatchPositions(contentArea.value, query).forEach(pos => matches.push({ textarea: contentArea, charIndex: pos }));
+    }
+ 
+    note._matchState.matches = matches;
+    note._matchState.idx = 0;
+ 
+    if (matches.length === 0) {
+        matchPrev.style.display  = "none";
+        matchCount.style.display = "none";
+        matchNext.style.display  = "none";
+        return;
+    }
+ 
+    const showArrows = matches.length > 1 ? "inline-block" : "none";
+    matchPrev.style.display  = showArrows;
+    matchNext.style.display  = showArrows;
+    matchCount.style.display = "inline";
+    matchCount.textContent   = `${1} / ${matches.length}`;
+ 
+    scrollToMatch(note, 0);
+}
+
+function navigateMatch(note,dir){
+    const state = note._matchState;
+    if (!state.matches.length) return; // If there are no matches, exit the function
+    state.idx = (state.idx + dir + state.matches.length) % state.matches.length; // Update the current match index based on the navigation direction
+    const matchCount = note.querySelector(".matchNavCount");
+    matchCount.textContent = `${state.idx + 1} / ${state.matches.length}`; // Update the match count display
+    scrollToMatch(note,state.idx); // Scroll to the current match
 }
 
 loadNotes();

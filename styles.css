@@ -131,6 +131,7 @@ h1{
     flex-wrap: wrap;
     gap:8px;
     width: 145px;
+    z-index:3;
 }
 
 .colorOption{
@@ -187,6 +188,7 @@ h1{
     flex: 1;
     overflow: hidden;
     font-size: 14px;
+    margin-bottom: 6px;
 }
 
 
@@ -225,9 +227,49 @@ h1{
     top: 0;
     height: 100%;
     min-height: 100%;
+    line-height: normal;
 }
 
 textarea {
     position: relative;
     z-index: 1; /* place it above the highlight layer */
+}
+
+
+/* ── Match navigator badge ───────────────────────────────── */
+/*  three separate absolutely-positioned elements       */
+.matchNavCount{
+    position:absolute;
+    bottom:7px;
+    right:27px;
+    font-size:10px;
+    color:#444;
+    font-family:Arial, sans-serif;
+    pointer-events:none;
+}
+ 
+.matchNavBtn{
+    position:absolute;
+    border:none;
+    background:transparent;
+    cursor:pointer;
+    font-size:8px;
+    color:#555;
+    padding:0;
+    line-height:1;
+    z-index:2;
+}
+ 
+.matchNavBtn:hover{
+    color:#000;
+}
+ 
+.matchPrevBtn{
+    bottom:7px;
+    right:8px;
+}
+ 
+.matchNextBtn{
+    bottom:7px;
+    right:16px;
 }
