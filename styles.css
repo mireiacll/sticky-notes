@@ -65,6 +65,7 @@ h1{
     cursor:grab;
     display: flex;
     flex-direction: column;
+    z-index: 1; /* so the z-index of the highligh and text doesn't make the text go above the note */
 }
 
 .noteTitle{
